@@ -5,12 +5,14 @@ const path = require('path');
 
 /* ---------- game economy rules (the server is the boss) ---------- */
 const FOOD_PRICE = [0, 0, 0, 0, 150, 200, 250, 300, 350, 400, 450, 500];
+// 20 permanent upgrades (same list as PERM_INFO in public/index.html)
 const PERMS = {
-  hp:    { base: 200, max: 3 },
-  dmg:   { base: 150, max: 10 },
-  coin:  { base: 150, max: 10 },
-  start: { base: 120, max: 5 },
-  cd:    { base: 150, max: 10 }
+  dmg: { base: 150, max: 10 }, rate: { base: 160, max: 6 }, crit: { base: 140, max: 8 }, critd: { base: 170, max: 5 },
+  cd: { base: 150, max: 10 }, boss: { base: 160, max: 5 }, big: { base: 130, max: 5 },
+  hp: { base: 200, max: 3 }, inv: { base: 150, max: 4 }, roll: { base: 110, max: 5 }, lunch: { base: 700, max: 1 },
+  left: { base: 140, max: 5 }, life: { base: 1200, max: 1 },
+  coin: { base: 150, max: 10 }, start: { base: 120, max: 5 }, mag: { base: 90, max: 5 }, coupon: { base: 130, max: 5 },
+  spd: { base: 140, max: 5 }, drop: { base: 120, max: 5 }, rev: { base: 100, max: 5 }
 };
 const permCost = (k, lvl) => Math.round(PERMS[k].base * (1 + 0.6 * lvl));
 const SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
@@ -19,7 +21,7 @@ const yesterday = () => today(new Date(Date.now() - 864e5));
 
 /* ---------- storage: Postgres on Render, memory when testing locally ---------- */
 function newData() {
-  return { bank: 0, un: FOOD_PRICE.map(p => (p === 0 ? 1 : 0)), perm: { hp: 0, dmg: 0, coin: 0, start: 0, cd: 0 }, xp: {}, ach: [], lastDaily: '', streak: 0, lastRun: 0 };
+  return { bank: 0, un: FOOD_PRICE.map(p => (p === 0 ? 1 : 0)), perm: {}, xp: {}, ach: [], lastDaily: '', streak: 0, lastRun: 0 };
 }
 let store;
 if (process.env.DATABASE_URL) {
@@ -151,7 +153,7 @@ app.post('/api/run', limit(20, 60000), auth(async (req, res, id) => {
     const d = u.data, now = Date.now();
     if (now - (d.lastRun || 0) < 15000) return { err: 'Slow down: runs can only be saved every 15 seconds' };
     if (wave < 1 || secs < wave * 6) return { err: 'That run was too short to count' };
-    const gain = Math.max(0, Math.min(Math.floor(+b.coins || 0), wave * 160 + 300, secs * 12 + 100)) + (won ? 200 : 0);
+    const gain = Math.max(0, Math.min(Math.floor(+b.coins || 0), wave * 210 + 300, secs * 15 + 100)) + (won ? 200 : 0);
     d.bank += gain; d.lastRun = now;
     const xp = Math.min(400, kills + wave * 5);
     for (const fi of foods) { if (!d.un[fi]) continue; const key = String(fi); d.xp[key] = (d.xp[key] || 0) + xp; }
