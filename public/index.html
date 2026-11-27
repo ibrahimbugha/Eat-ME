@@ -1978,6 +1978,7 @@ function slotUndo(i){const s=slots[i];if(s&&s.ready){s.ready=false;sfx.roll();me
 function joinSlot(i,dev){
   if(slots[i])return;
   ensureAudio();
+  const auto=!dev;
   if(!dev){
     const pads=connectedPads().filter(x=>!hasDev('pad'+x));
     if(touchSeen&&!hasDev('touch'))dev=devFor('touch','touch',0);
@@ -1988,8 +1989,18 @@ function joinSlot(i,dev){
   }
   if(hasDev(dev.id))return;
   const other=slots[1-i];
-  slots[i]={dev,fi:other?(other.fi+1)%NF:0,ready:false};
+  slots[i]={dev,fi:other?(other.fi+1)%NF:0,ready:false,auto};
   poll(dev);sfx.pick();menuKey[0]=menuKey[1]=null;
+}
+/* a controller shows up: any auto-picked keyboard/touch player switches to it */
+function autoSwitch(){
+  for(const s of slots){
+    if(!s||!s.auto||s.ready||s.dev.type==='pad')continue;
+    const p=connectedPads().find(x=>!hasDev('pad'+x));
+    if(p===undefined)return;
+    s.dev=devFor('pad'+p,'pad',p);s.auto=false;poll(s.dev);sfx.pick();menuKey[0]=menuKey[1]=null;toast(LANG==='ar'?'🎮 تم اكتشاف ذراع وتم التبديل إليه':'🎮 Controller found, switched to it!','#b6f2df');
+    return;
+  }
 }
 function leaveSlot(i){slots[i]=null;sfx.roll();menuKey[0]=menuKey[1]=null;}
 function bars(n){const w=document.createElement('div');w.className='bar5';for(let k=0;k<5;k++){const b=document.createElement('i');if(k<n)b.className='on';w.appendChild(b);}return w;}
@@ -2044,7 +2055,7 @@ function renderSlots(){
 let goKey='';
 function menuStep(dt){
   if(reqPause){toTitle();return;}
-  scanJoin();
+  autoSwitch();scanJoin();
   for(let i=0;i<2;i++){
     const s=slots[i];if(!s)continue;
     const p=poll(s.dev);
@@ -2134,7 +2145,7 @@ function toSelect(){
   mode='menu';$('title').hidden=true;$('menu').hidden=false;showRow(false);
   for(const s of slots)if(s)s.ready=false;
   menuKey[0]=menuKey[1]=null;goKey='';refreshLocks();
-  if(!slots[0]&&!slots[1]&&!connectedPads().length)joinSlot(0);
+  if(!slots[0]&&!slots[1])joinSlot(0);
 }
 function toTitle(){mode='title';$('menu').hidden=true;$('title').hidden=false;tView='main';tKey='';showRow(true);}
 /* ---------- accounts (talk to the Render server) ---------- */
