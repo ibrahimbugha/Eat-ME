@@ -1105,7 +1105,8 @@ function poll(dev){
       const b=i=>!!(gp.buttons[i]&&gp.buttons[i].pressed);
       s.mx=dz(gp.axes[0]||0);s.mz=dz(gp.axes[1]||0);
       if(b(14))s.mx=-1;if(b(15))s.mx=1;if(b(12))s.mz=-1;if(b(13))s.mz=1;
-      s.ax=dz(gp.axes[2]||0);s.az=dz(gp.axes[3]||0);
+      const std=gp.mapping==='standard',ai=std?2:(gp.axes.length>=6?2:2),aj=std?3:(gp.axes.length>=6?5:3);
+      s.ax=dz(gp.axes[ai]||0);s.az=dz(gp.axes[aj]||0);
       s.fire=b(7)||b(5)||Math.hypot(s.ax,s.az)>.45;
       cur.confirm=b(0);cur.roll=b(0);cur.power=b(2)||b(1)||b(3)||b(6);cur.start=b(9);cur.back=b(8);
     }
@@ -1956,7 +1957,13 @@ function showRow(on){
   showFoods.forEach(g=>{g.visible=on;});if(!on)lockLbl.forEach(l=>{l.visible=false;});
   if(on){selRings.forEach(r=>{r.visible=false;});selFoods.forEach(c=>{for(const k in c)c[k].visible=false;});}
 }
-function devLabel(d){return d.type==='pad'?'🎮 '+tr('Controller'):(d.type==='touch'?'👆 '+tr('Touch'):'⌨️ '+tr('Keyboard'));}
+function devLabel(d){
+  if(d.type==='pad')return '🎮 '+tr('Controller')+' '+(d.idx+1);
+  if(d.type==='touch')return '👆 '+tr('Touch');
+  return d.idx===1?'⌨️ WASD + C V B':'⌨️ ← ↑ ↓ → + , . /';
+}
+function connectedPads(){const a=[];for(const gp of getPads())if(gp&&gp.connected)a.push(gp.index);return a;}
+function padsKey(){return connectedPads().join(',')+'|'+slots.map(s=>s?s.dev.id:'-').join(',');}
 function slotMove(i,d){const s=slots[i];if(!s||s.ready)return;s.fi=(s.fi+NF+d)%NF;sfx.roll();menuKey[i]=null;}
 function slotConfirm(i){
   const s=slots[i];if(!s)return;
@@ -1968,18 +1975,23 @@ function slotConfirm(i){
   }else sfx.block();
 }
 function slotUndo(i){const s=slots[i];if(s&&s.ready){s.ready=false;sfx.roll();menuKey[i]=null;}}
-function joinSlot(i){
+function joinSlot(i,dev){
   if(slots[i])return;
   ensureAudio();
-  let dev;
-  if(touchSeen&&!hasDev('touch'))dev=devFor('touch','touch',0);
-  else if(!hasDev('kb'+(i+1)))dev=devFor('kb'+(i+1),'kb',i+1);
-  else if(!hasDev('kb'+(2-i)))dev=devFor('kb'+(2-i),'kb',2-i);
-  else return;
+  if(!dev){
+    const pads=connectedPads().filter(x=>!hasDev('pad'+x));
+    if(touchSeen&&!hasDev('touch'))dev=devFor('touch','touch',0);
+    else if(pads.length)dev=devFor('pad'+pads[0],'pad',pads[0]);
+    else if(!hasDev('kb'+(i+1)))dev=devFor('kb'+(i+1),'kb',i+1);
+    else if(!hasDev('kb'+(2-i)))dev=devFor('kb'+(2-i),'kb',2-i);
+    else return;
+  }
+  if(hasDev(dev.id))return;
   const other=slots[1-i];
   slots[i]={dev,fi:other?(other.fi+1)%NF:0,ready:false};
-  poll(dev);sfx.pick();menuKey[i]=null;
+  poll(dev);sfx.pick();menuKey[0]=menuKey[1]=null;
 }
+function leaveSlot(i){slots[i]=null;sfx.roll();menuKey[0]=menuKey[1]=null;}
 function bars(n){const w=document.createElement('div');w.className='bar5';for(let k=0;k<5;k++){const b=document.createElement('i');if(k<n)b.className='on';w.appendChild(b);}return w;}
 function elx(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;}
 function xpBar(fi){
@@ -1989,15 +2001,23 @@ function xpBar(fi){
 function renderSlots(){
   for(let i=0;i<2;i++){
     const s=slots[i],el=$('slot'+i);
-    const key=s?[s.fi,s.ready,s.dev.id,save.un[s.fi],save.bank,foodLevel(s.fi),LANG].join('|'):'none'+LANG+touchSeen;
+    const key=s?[s.fi,s.ready,s.dev.id,save.un[s.fi],save.bank,foodLevel(s.fi),LANG,padsKey()].join('|'):'none'+LANG+touchSeen+padsKey();
     if(key===menuKey[i])continue;menuKey[i]=key;
     el.className='selcard s'+i+(s&&s.ready?' ready':'');
     el.textContent='';
-    const hd=elx('div','selhd');hd.appendChild(elx('span','pbadge','P'+(i+1)));hd.appendChild(elx('span','dev',s?devLabel(s.dev):''));el.appendChild(hd);
+    const hd=elx('div','selhd');hd.appendChild(elx('span','pbadge','P'+(i+1)));hd.appendChild(elx('span','dev',s?devLabel(s.dev):''));
+    if(s){const lv=elx('button','chip','✖ '+(LANG==='ar'?'تغيير':'Change'));lv.type='button';lv.style.padding='0 10px';lv.style.fontSize='13px';lv.onclick=()=>leaveSlot(i);hd.appendChild(lv);}
+    el.appendChild(hd);
     if(!s){
-      el.appendChild(elx('div','plus','➕'));
-      const jb=elx('div','joinbtn',tr('Tap or press a button to join'));jb.onclick=()=>joinSlot(i);el.appendChild(jb);
-      if(i)el.appendChild(elx('div','small','1 PLAYER is fine! Lock in your food and press Start. Player 2 is optional. Solo gets +2 bites.'));
+      el.appendChild(elx('div','small',LANG==='ar'?'اختر طريقة اللعب:':'How will this player play?'));
+      const opt=(label,dev)=>{const o=elx('button','btn small',label);o.type='button';o.style.margin='3px 0';o.style.width='100%';o.onclick=()=>joinSlot(i,dev);el.appendChild(o);};
+      if(!hasDev('kb1'))opt('⌨️ '+(LANG==='ar'?'لوحة المفاتيح: WASD':'Keyboard: WASD + C V B'),devFor('kb1','kb',1));
+      if(!hasDev('kb2'))opt('⌨️ '+(LANG==='ar'?'لوحة المفاتيح: الأسهم':'Keyboard: Arrows + , . /'),devFor('kb2','kb',2));
+      const pads=connectedPads();
+      pads.forEach(x=>{if(!hasDev('pad'+x))opt('🎮 '+tr('Controller')+' '+(x+1),devFor('pad'+x,'pad',x));});
+      if(touchSeen&&!hasDev('touch'))opt('👆 '+tr('Touch'),devFor('touch','touch',0));
+      if(!pads.length)el.appendChild(elx('div','small','🎮 '+(LANG==='ar'?'لا يوجد ذراع: اضغط أي زر على ذراعك لتفعيله.':'No controller yet: press any button on it to wake it up.')));
+      if(i)el.appendChild(elx('div','small',LANG==='ar'?'اللاعب ٢ اختياري. الوضع المنفرد يعطيك +٢ قضمات.':'Player 2 is optional. Solo gets +2 bites.'));
       continue;
     }
     const f=FOODS[s.fi],un=save.un[s.fi],lv=foodLevel(s.fi);
@@ -2056,6 +2076,7 @@ function menuStep(dt){
   if(txt!==goKey){goKey=txt;const g=$('startBtn');g.textContent=(allReady?'🍴 ':'')+tr(txt);g.className='btn big '+(allReady?'pink pulse':'dim');}
   let hint=LANG==='ar'?'ذراع: العصا تتحرك وA للتأكيد. لوحة مفاتيح P1: WASD وC. P2: الأسهم وفاصلة. على الهاتف: المس البطاقة للانضمام.':'Controller: stick moves, A locks in. Keyboard P1: WASD + C. P2: arrows + comma. Phone: tap a card to join. You can also click the arrows.';
   if(padBlocked)hint=(LANG==='ar'?'أذرع اللعب محجوبة في هذا الإطار. افتح اللعبة في تبويب مستقل. ':'Controllers are blocked in this frame. Open the game in its own tab. ')+hint;
+  else if(connectedPads().length)hint='🎮 '+connectedPads().length+' '+(LANG==='ar'?'ذراع متصل. ':'controller(s) connected. ')+hint;
   else if(!padSeen&&!touchSeen)hint=tr('No controller seen yet: plug one in and press a button. ')+hint;
   if(hint!==$('hint')._h){$('hint')._h=hint;$('hint').textContent=hint;}
   if(reqStart&&allReady)startGame();
@@ -2113,7 +2134,7 @@ function toSelect(){
   mode='menu';$('title').hidden=true;$('menu').hidden=false;showRow(false);
   for(const s of slots)if(s)s.ready=false;
   menuKey[0]=menuKey[1]=null;goKey='';refreshLocks();
-  if(!slots[0]&&!slots[1])joinSlot(0);
+  if(!slots[0]&&!slots[1]&&!connectedPads().length)joinSlot(0);
 }
 function toTitle(){mode='title';$('menu').hidden=true;$('title').hidden=false;tView='main';tKey='';showRow(true);}
 /* ---------- accounts (talk to the Render server) ---------- */
