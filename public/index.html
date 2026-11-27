@@ -1997,7 +1997,7 @@ function renderSlots(){
     if(!s){
       el.appendChild(elx('div','plus','➕'));
       const jb=elx('div','joinbtn',tr('Tap or press a button to join'));jb.onclick=()=>joinSlot(i);el.appendChild(jb);
-      if(i)el.appendChild(elx('div','small',tr('Empty: play SOLO or join')+'. '+tr('Solo mode: just Player 1 plays and gets +2 bites.')));
+      if(i)el.appendChild(elx('div','small','1 PLAYER is fine! Lock in your food and press Start. Player 2 is optional. Solo gets +2 bites.'));
       continue;
     }
     const f=FOODS[s.fi],un=save.un[s.fi],lv=foodLevel(s.fi);
@@ -2113,6 +2113,7 @@ function toSelect(){
   mode='menu';$('title').hidden=true;$('menu').hidden=false;showRow(false);
   for(const s of slots)if(s)s.ready=false;
   menuKey[0]=menuKey[1]=null;goKey='';refreshLocks();
+  if(!slots[0]&&!slots[1])joinSlot(0);
 }
 function toTitle(){mode='title';$('menu').hidden=true;$('title').hidden=false;tView='main';tKey='';showRow(true);}
 /* ---------- accounts (talk to the Render server) ---------- */
