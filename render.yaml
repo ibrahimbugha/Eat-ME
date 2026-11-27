@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: dont-eat-me
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dont-eat-me-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+databases:
+  - name: dont-eat-me-db
+    plan: free
+    region: frankfurt
+    databaseName: dont_eat_me_db
+    user: dont_eat_me_db_user
+    postgresMajorVersion: "16"
