@@ -19,7 +19,7 @@ const yesterday = () => today(new Date(Date.now() - 864e5));
 
 /* ---------- storage: Postgres on Render, memory when testing locally ---------- */
 function newData() {
-  return { bank: 0, un: FOOD_PRICE.map(p => (p === 0 ? 1 : 0)), perm: { hp: 0, dmg: 0, coin: 0, start: 0, cd: 0 }, xp: {}, lastDaily: '', streak: 0, lastRun: 0 };
+  return { bank: 0, un: FOOD_PRICE.map(p => (p === 0 ? 1 : 0)), perm: { hp: 0, dmg: 0, coin: 0, start: 0, cd: 0 }, xp: {}, ach: [], lastDaily: '', streak: 0, lastRun: 0 };
 }
 let store;
 if (process.env.DATABASE_URL) {
@@ -85,7 +85,7 @@ function profile(u) {
   const d = u.data, costs = {};
   for (const k of Object.keys(PERMS)) costs[k] = permCost(k, d.perm[k] || 0);
   const ready = d.lastDaily !== today();
-  return { username: u.username, bank: d.bank, un: d.un, perm: d.perm, xp: d.xp, best: u.best, wins: u.wins, streak: d.streak, dailyReady: ready, dailyReward: ready ? dailyReward(d).reward : 0, costs, prices: FOOD_PRICE };
+  return { username: u.username, ach: d.ach || [], bank: d.bank, un: d.un, perm: d.perm, xp: d.xp, best: u.best, wins: u.wins, streak: d.streak, dailyReady: ready, dailyReward: ready ? dailyReward(d).reward : 0, costs, prices: FOOD_PRICE };
 }
 
 /* ---------- web server ---------- */
@@ -203,6 +203,14 @@ app.post('/api/daily', auth(async (req, res, id) => {
   if (!r) return res.status(401).json({ error: 'Please log in again' });
   if (r.out.err) return res.status(400).json({ error: r.out.err });
   res.json({ reward: r.out.reward, streak: r.out.streak, profile: profile(r.user) });
+}));
+
+const ACH_IDS = ['first_win', 'flawless', 'boss', 'combo20', 'coop', 'rich', 'half', 'all', 'lvl5', 'wave10', 'tasty', 'daily'];
+app.post('/api/ach', limit(30, 60000), auth(async (req, res, id) => {
+  const ids = Array.isArray((req.body || {}).ids) ? req.body.ids.filter(i => ACH_IDS.includes(i)).slice(0, 12) : [];
+  const r = await store.mutate(id, u => { const d = u.data; d.ach = [...new Set([...(d.ach || []), ...ids])]; return {}; });
+  if (!r) return res.status(401).json({ error: 'Please log in again' });
+  res.json({ profile: profile(r.user) });
 }));
 
 app.get('/api/leaderboard', wrap(async (req, res) => { res.json({ rows: await store.top(10) }); }));
