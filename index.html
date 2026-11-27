@@ -200,10 +200,10 @@ const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const lerp=(a,b,t)=>a+(b-a)*t;
 const angLerp=(a,b,t)=>{const d=((b-a+Math.PI)%TAU+TAU)%TAU-Math.PI;return a+d*t;};
 const AW=46,AH=30,HX=AW/2-1.3,HZ=AH/2-1.3,TILT=.92;
-const save={bank:0,un:[1,1,1,1,0,0,0,0,0,0,0,0],best:0,wins:0,vol:3,shake:1,perm:{hp:0,dmg:0,coin:0,start:0,cd:0},xp:{}};
+const save={bank:0,un:[1,1,1,1,0,0,0,0,0,0,0,0],best:0,wins:0,vol:3,shake:1,music:1,perm:{hp:0,dmg:0,coin:0,start:0,cd:0},xp:{}};
 try{const r=JSON.parse(localStorage.getItem('dem-save2')||'null');if(r)Object.assign(save,r);const ob=+localStorage.getItem('dem-best')||0;if(ob>save.best)save.best=ob;}catch(e){}
 for(let i=0;i<12;i++)if(save.un[i]===undefined)save.un[i]=0;
-function saveGame(){try{if(acct)localStorage.setItem('dem-settings',JSON.stringify({vol:save.vol,shake:save.shake}));else localStorage.setItem('dem-save2',JSON.stringify(save));}catch(e){}}
+function saveGame(){try{if(acct)localStorage.setItem('dem-settings',JSON.stringify({vol:save.vol,shake:save.shake,music:save.music}));else localStorage.setItem('dem-save2',JSON.stringify(save));}catch(e){}}
 
 if(!window.THREE){$('fatal').hidden=false;return;}
 let renderer;
@@ -284,6 +284,23 @@ const sfx={
   evolve:()=>{tone(440,.12,'triangle',.06,0);setTimeout(()=>tone(660,.12,'triangle',.06,0),110);setTimeout(()=>tone(880,.28,'triangle',.06,0),220);},
   wave:()=>{tone(260,.2,'square',.04,0);setTimeout(()=>tone(390,.3,'square',.04,0),180);}
 };
+
+/* ---------- music: a tiny looping tune, faster and lower during boss fights ---------- */
+let mStep=0,mLast=0;
+const MSCALE=[0,3,5,7,10,12,15,17];
+function musicTick(){
+  if(!ac||ac.state!=='running'||!save.music||!save.vol||document.hidden)return;
+  const boss=typeof mode!=='undefined'&&mode==='play'&&typeof window.__dem!=='undefined'&&window.__dem.boss;
+  const calm=mode==='title'||mode==='login'||mode==='menu'||mode==='shop';
+  const gap=boss?120:(calm?200:155),now=performance.now();
+  if(now-mLast<gap)return;mLast=now;
+  const st=mStep++,fq=n=>196*Math.pow(2,n/12),root=boss?-12:-5,v=calm?.5:1;
+  if(st%4===0)tone(fq(root-12),gap*3.2/1000,'triangle',.05*v,0);
+  const note=MSCALE[(st*3+((st>>3)&1)*2+(boss?st%3:0))%8];
+  tone(fq(root+note+(((st>>4)&1)?5:0)),gap*1.6/1000,boss?'sawtooth':'square',.012*v,0);
+  if(boss&&st%2===1)tone(fq(root-24),.1,'sawtooth',.03,-20);
+}
+setInterval(musicTick,40);
 
 /* ---------- foods ---------- */
 function buildBurger(){
@@ -1003,7 +1020,7 @@ function updateZonesEggs(dt){
 }
 function hurt(p){
   if(p.inv>0||p.downed||p.dashT>0||p.rollT>0)return false;
-  p.hp--;p.inv=1.6;sfx.bite();shake=Math.max(shake,.6);hitstop(.1);punch=Math.max(punch,.04);rumble(p,260,1,.8);
+  p.hp--;waveHit=true;p.inv=1.6;sfx.bite();shake=Math.max(shake,.6);hitstop(.1);punch=Math.max(punch,.04);rumble(p,260,1,.8);
   burst(p.x,1,p.z,0xff4d6d,16,6,.2,.55);splat(p.x,p.z,1.2,0xff4d6d);
   comboT=Math.min(comboT,1);
   if(p.hp<=0){
@@ -1454,7 +1471,7 @@ function startWave(n){
     clearWorld();buildStage(st);
     players.forEach((p,i)=>{p.x=players.length>1?(i?4:-4):0;p.z=8;p.vx=p.vz=0;p.g.position.set(p.x,0,p.z);if(p.downed)revive(p,1);});
   }
-  spawnQ=composeWave(n);spawnCd=1.2;wstate='fight';sfx.wave();
+  waveHit=false;spawnQ=composeWave(n);spawnCd=1.2;wstate='fight';sfx.wave();
   const sl=gameType==='story'&&n%5===1?STORY[st]:STAGES[st].name;banner(gameType==='story'&&n===STORY_END?'FINAL BOSS!':(n%5===0?'BOSS WAVE!':'Wave '+n),sl);
 }
 function waveStep(dt){
@@ -1470,7 +1487,8 @@ function waveStep(dt){
       if(gameType==='story'&&wave>=STORY_END){wstate='won';winGame();return;}
       wstate='inter';inter=2.4;
       for(const p of players)if(p.downed)revive(p,1);
-      banner('Wave '+wave+' cleared!','Grab your coins');
+      if(!waveHit){const fb=10+wave*2;for(const p of players)if(!p.downed){p.coins+=fb;p.coinsEarned+=fb;}banner('Wave '+wave+' cleared! FLAWLESS','No bites taken: +'+fb+' coins each');}
+      else banner('Wave '+wave+' cleared!','Grab your coins');
       if(wave>best){best=wave;try{localStorage.setItem('dem-best',String(best));}catch(e){}}
     }
   }else if(wstate==='inter'){
@@ -1558,7 +1576,7 @@ function updateHud(){
     if(key!==hudKey[p.i]){
       hudKey[p.i]=key;
       h.querySelector('.nm').textContent=p.f.name;
-      h.querySelector('.lv').textContent=p.tier===1?'':(p.tier===2?'TASTY':'GOURMET');
+      h.querySelector('.lv').textContent='Lv '+foodLevel(p.fi)+(p.tier===1?'':(p.tier===2?'  TASTY':'  GOURMET'));
       let s='';for(let k=0;k<p.maxHp;k++)s+='<span class="pip'+(k<p.hp?' on':'')+'"></span>';
       s+='<span class="coins">'+p.coins+' coins</span>';
       h.querySelector('.pips').innerHTML=s;
@@ -1689,7 +1707,7 @@ function menuStep(dt){
   if(reqStart&&allReady)startGame();
 }
 /* ---------- title screen, modes, bank ---------- */
-let tCur=0,sCur=0,uCur=0,tView='main',tKey='',gameType='story',runGain=0,won=false,leadRows=null,busy=false,bpRef=null,runSaved=true,runErr='',runStart=0;
+let waveHit=false,tCur=0,sCur=0,uCur=0,tView='main',tKey='',gameType='story',runGain=0,won=false,leadRows=null,busy=false,bpRef=null,runSaved=true,runErr='',runStart=0;
 const STORY_END=20;
 const STORY=['The restaurant is open and YOU are the special! Survive!','Mama Munch is coming. The customers are angrier now...','The festival crowd is hungry. Stay together!','The rooftop. The Grand Chef waits. This is it!'];
 function decorChef(g){
@@ -1759,7 +1777,7 @@ async function api(path,body){
 function applyProfile(p){
   acct=p;save.bank=p.bank;save.un=p.un.slice();save.perm=Object.assign({hp:0,dmg:0,coin:0,start:0,cd:0},p.perm);
   save.xp=p.xp||{};save.best=p.best;save.wins=p.wins;best=p.best;
-  try{const st=JSON.parse(localStorage.getItem('dem-settings')||'null');if(st){save.vol=st.vol;save.shake=st.shake;}}catch(e){}
+  try{const st=JSON.parse(localStorage.getItem('dem-settings')||'null');if(st){save.vol=st.vol;save.shake=st.shake;if(st.music!==undefined)save.music=st.music;}}catch(e){}
   refreshLocks();menuKey[0]=menuKey[1]=null;tKey='';
 }
 const PERM_INFO=[
@@ -1786,6 +1804,7 @@ async function doAuth(kind){
   setLoginBusy(false);
 }
 function bootLogin(){
+  try{fetch(API+'/api/health',{cache:'no-store'}).catch(()=>{});}catch(e){}
   $('lform').addEventListener('submit',e=>{e.preventDefault();doAuth('login');});
   $('rbtn').onclick=()=>doAuth('register');
   $('gbtn').onclick=()=>{acct=null;enterTitle();};
@@ -1834,12 +1853,13 @@ function titleOk(){
   else if(tView==='upg'){if(uCur>=PERM_INFO.length)tView='main';else buyPerm(PERM_INFO[uCur].k);}
   else{
     if(sCur===0){save.vol=(save.vol+1)%5;saveGame();}
-    else if(sCur===1){save.shake=save.shake?0:1;saveGame();}
+    else if(sCur===1){save.music=save.music?0:1;saveGame();}
+    else if(sCur===2){save.shake=save.shake?0:1;saveGame();}
     else tView='main';
   }
 }
 function renderTitle(){
-  const key=[tView,tCur,sCur,uCur,save.vol,save.shake,save.bank,save.wins,save.best,acct?acct.username:'',acct?acct.dailyReady:'',JSON.stringify(save.perm),leadRows?leadRows.length:-1].join('|');
+  const key=[tView,tCur,sCur,uCur,save.vol,save.shake,save.music,save.bank,save.wins,save.best,acct?acct.username:'',acct?acct.dailyReady:'',JSON.stringify(save.perm),leadRows?leadRows.length:-1].join('|');
   if(key===tKey)return;tKey=key;
   const el=$('tmenu');el.textContent='';
   const add=(t,sub,cur,fn)=>{
@@ -1879,8 +1899,9 @@ function renderTitle(){
     add('Back','',true,()=>titleOk());
   }else{
     add('Volume  '+'■'.repeat(save.vol)+'□'.repeat(4-save.vol),'Left / Right or A to change',sCur===0,()=>{sCur=0;titleOk();});
-    add('Screen shake: '+(save.shake?'On':'Off'),'Left / Right or A to toggle',sCur===1,()=>{sCur=1;titleOk();});
-    add('Back','',sCur===2,()=>{sCur=2;titleOk();});
+    add('Music: '+(save.music?'On':'Off'),'Left / Right or A to toggle',sCur===1,()=>{sCur=1;titleOk();});
+    add('Screen shake: '+(save.shake?'On':'Off'),'Left / Right or A to toggle',sCur===2,()=>{sCur=2;titleOk();});
+    add('Back','',sCur===3,()=>{sCur=3;titleOk();});
   }
 }
 function titleStep(dt){
@@ -1896,10 +1917,11 @@ function titleStep(dt){
   if(tView==='main'){const o=tCur;tCur=nav(tCur,8);if(o!==tCur)sfx.roll();}
   else if(tView==='upg'){const o=uCur;uCur=nav(uCur,PERM_INFO.length+1);if(o!==uCur)sfx.roll();}
   else if(tView==='set'){
-    const o=sCur;sCur=nav(sCur,3);if(o!==sCur)sfx.roll();
+    const o=sCur;sCur=nav(sCur,4);if(o!==sCur)sfx.roll();
     if(lf||rt){
       if(sCur===0){save.vol=clamp(save.vol+(rt?1:-1),0,4);saveGame();sfx.pick();}
-      else if(sCur===1){save.shake=save.shake?0:1;saveGame();}
+      else if(sCur===1){save.music=save.music?0:1;saveGame();}
+      else if(sCur===2){save.shake=save.shake?0:1;saveGame();}
     }
   }
   if(ok)titleOk();else if(bk&&tView!=='main')tView='main';
@@ -1996,7 +2018,7 @@ function frame(now){
 }
 fit();buildStage(0);renderSlots();bootLogin();
 requestAnimationFrame(frame);
-window.__dem={get mode(){return mode;},get wave(){return wave;},get combo(){return combo;},slots,save,get type(){return gameType;},get acct(){return acct;},players:()=>players,enemies:()=>enemies,
+window.__dem={get mode(){return mode;},get wave(){return wave;},get combo(){return combo;},slots,save,get type(){return gameType;},get acct(){return acct;},get boss(){return !!boss;},players:()=>players,enemies:()=>enemies,
   killAll(){for(const e of enemies.slice())damageEnemy(e,9999,players[0]||null,0,0,false);spawnQ=[];},
   setWave(n){wave=n-1;startWave(n);}};
 })();
