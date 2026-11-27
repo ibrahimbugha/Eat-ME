@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#ffd9e8"></head><body><title>Don't Eat Me</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#ffd9e8"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"></head><body><title>Don't Eat Me</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -306,7 +306,7 @@ html[dir=rtl] #center{direction:rtl}
 <div id="title" class="overlay" hidden>
   <div class="topbar">
     <div style="display:flex;gap:8px"><span class="chip" id="chipUser"></span><span class="chip coin" id="chipBank"></span></div>
-    <button type="button" class="chip" id="langBtn"></button>
+    <span style="display:flex;gap:8px"><button type="button" class="chip" id="installBtn" hidden>📲 Install</button><button type="button" class="chip" id="langBtn"></button></span>
   </div>
   <div class="tcol">
     <div><h1 class="logo">Don't Eat Me!</h1><p class="tag" data-i18n="You are the food. They are hungry. Can you save the menu?"></p></div>
@@ -2486,7 +2486,16 @@ function overStep(dt){
   if(overT<=-.4&&go)toMenu();
 }
 let last=performance.now();
+let installEv=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEv=e;$('installBtn').hidden=false;});
+window.addEventListener('appinstalled',()=>{$('installBtn').hidden=true;installEv=null;});
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+try{if(/iphone|ipad/i.test(navigator.userAgent)&&!navigator.standalone)$('installBtn').hidden=false;}catch(e){}
 function bindUi(){
+  $('installBtn').onclick=()=>{
+    if(installEv){installEv.prompt();installEv=null;$('installBtn').hidden=true;}
+    else toast(LANG==='ar'?'في آيفون: اضغط مشاركة ثم "إضافة إلى الشاشة الرئيسية"':'On iPhone: tap Share, then "Add to Home Screen"');
+  };
   $('langBtn').onclick=toggleLang;$('langBtn2').onclick=toggleLang;
   $('backBtn').onclick=()=>{sfx.roll();toTitle();};
   $('startBtn').onclick=()=>{ensureAudio();reqStart=true;};
