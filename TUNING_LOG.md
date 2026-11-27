@@ -19,3 +19,11 @@ Every balance change goes here: what changed, and why. All numbers live in the `
 
 ## Permanent upgrades (20)
 Price = base x (1 + 0.6 x level). Same list in `server.js` (`PERMS`) and `public/index.html` (`PERM_INFO`).
+
+## 2026-11-28: Plan v2, phase 3 (chapters)
+- Story is now a tutorial + 5 chapters of 20 waves. Mini boss at wave 10, chapter boss at wave 20.
+- `chapterStep` 5: each chapter counts as 5 waves harder than the last (chapter 5 wave 20 = difficulty of wave 40, still capped).
+- Wave size adds `+2 x chapter`. Extra elites per wave capped at 12 (`eliteMaxExtra`).
+- Story boss HP: base x (2.2 + 0.15 per chapter). Mini bosses x0.5.
+- Stars: 3 = no one eaten and 5 bites or less, 2 = eaten at most once and 15 bites or less, 1 = cleared.
+- Beating chapters 1-5 unlocks Frank, Tito, Coco, Eggbert and Cleo for free, plus 200 coins.

@@ -14,6 +14,8 @@ const PERMS = {
   coin: { base: 150, max: 10 }, start: { base: 120, max: 5 }, mag: { base: 90, max: 5 }, coupon: { base: 130, max: 5 },
   spd: { base: 140, max: 5 }, drop: { base: 120, max: 5 }, rev: { base: 100, max: 5 }
 };
+// beating a chapter unlocks a food for free (Frank, Tito, Coco, Eggbert, Cleo)
+const CH_FOOD = [null, 4, 5, 6, 7, 8];
 const permCost = (k, lvl) => Math.round(PERMS[k].base * (1 + 0.6 * lvl));
 const SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
 const today = (d = new Date()) => d.toISOString().slice(0, 10);
@@ -21,7 +23,7 @@ const yesterday = () => today(new Date(Date.now() - 864e5));
 
 /* ---------- storage: Postgres on Render, memory when testing locally ---------- */
 function newData() {
-  return { bank: 0, un: FOOD_PRICE.map(p => (p === 0 ? 1 : 0)), perm: {}, xp: {}, ach: [], lastDaily: '', streak: 0, lastRun: 0 };
+  return { bank: 0, un: FOOD_PRICE.map(p => (p === 0 ? 1 : 0)), perm: {}, xp: {}, ach: [], lastDaily: '', streak: 0, lastRun: 0, chap: 0 };
 }
 let store;
 if (process.env.DATABASE_URL) {
@@ -87,12 +89,14 @@ function profile(u) {
   const d = u.data, costs = {};
   for (const k of Object.keys(PERMS)) costs[k] = permCost(k, d.perm[k] || 0);
   const ready = d.lastDaily !== today();
-  return { username: u.username, ach: d.ach || [], bank: d.bank, un: d.un, perm: d.perm, xp: d.xp, best: u.best, wins: u.wins, streak: d.streak, dailyReady: ready, dailyReward: ready ? dailyReward(d).reward : 0, costs, prices: FOOD_PRICE };
+  return { username: u.username, ach: d.ach || [], bank: d.bank, un: d.un, perm: d.perm, xp: d.xp, best: u.best, wins: u.wins, chap: d.chap || 0, streak: d.streak, dailyReady: ready, dailyReward: ready ? dailyReward(d).reward : 0, costs, prices: FOOD_PRICE };
 }
 
 /* ---------- web server ---------- */
 const app = express();
 app.set('trust proxy', 1);
+app.disable('x-powered-by');
+app.use((req, res, next) => { res.set({ 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'strict-origin-when-cross-origin' }); next(); });
 app.use(express.json({ limit: '20kb' }));
 app.use((req, res, next) => {
   res.set({ 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type,Authorization', 'Access-Control-Allow-Methods': 'GET,POST,OPTIONS' });
@@ -147,22 +151,27 @@ app.post('/api/run', limit(20, 60000), auth(async (req, res, id) => {
   const wave = Math.max(0, Math.min(60, Math.floor(+b.wave || 0)));
   const kills = Math.max(0, Math.min(2000, Math.floor(+b.kills || 0)));
   const secs = Math.max(0, Math.min(7200, Math.floor(+b.secs || 0)));
-  const won = !!b.won && b.mode === 'story' && wave >= 20;
+  const chapter = Math.max(0, Math.min(5, Math.floor(+b.chapter || 0)));
+  const won = !!b.won && b.mode === 'story' && wave >= (chapter === 0 ? 3 : 20);
+  const prog = b.mode === 'story' ? (chapter >= 1 ? (chapter - 1) * 20 + wave : 0) : wave;
   const foods = Array.isArray(b.foods) ? [...new Set(b.foods.map(Number).filter(i => Number.isInteger(i) && i >= 0 && i < FOOD_PRICE.length))].slice(0, 2) : [];
   const r = await store.mutate(id, u => {
     const d = u.data, now = Date.now();
     if (now - (d.lastRun || 0) < 15000) return { err: 'Slow down: runs can only be saved every 15 seconds' };
     if (wave < 1 || secs < wave * 6) return { err: 'That run was too short to count' };
-    const gain = Math.max(0, Math.min(Math.floor(+b.coins || 0), wave * 210 + 300, secs * 15 + 100)) + (won ? 200 : 0);
+    let food = -1;
+    const chapWon = won && chapter >= 1 && chapter <= (d.chap || 0) + 1;
+    if (chapWon) { d.chap = Math.max(d.chap || 0, chapter); const f = CH_FOOD[chapter]; if (!d.un[f]) { d.un[f] = 1; food = f; } }
+    const gain = Math.max(0, Math.min(Math.floor(+b.coins || 0), wave * 210 + 300, secs * 15 + 100)) + (chapWon ? 200 : 0);
     d.bank += gain; d.lastRun = now;
     const xp = Math.min(400, kills + wave * 5);
     for (const fi of foods) { if (!d.un[fi]) continue; const key = String(fi); d.xp[key] = (d.xp[key] || 0) + xp; }
-    u.best = Math.max(u.best, wave); if (won) u.wins += 1;
-    return { gain, xp };
+    u.best = Math.max(u.best, Math.min(100, prog)); if (chapWon && chapter === 5) u.wins += 1;
+    return { gain, xp, food };
   });
   if (!r) return res.status(401).json({ error: 'Please log in again' });
   if (r.out.err) return res.status(400).json({ error: r.out.err });
-  res.json({ gain: r.out.gain, xp: r.out.xp, profile: profile(r.user) });
+  res.json({ gain: r.out.gain, xp: r.out.xp, food: r.out.food, profile: profile(r.user) });
 }));
 
 app.post('/api/unlock', auth(async (req, res, id) => {
@@ -207,9 +216,9 @@ app.post('/api/daily', auth(async (req, res, id) => {
   res.json({ reward: r.out.reward, streak: r.out.streak, profile: profile(r.user) });
 }));
 
-const ACH_IDS = ['first_win', 'flawless', 'boss', 'combo20', 'coop', 'rich', 'half', 'all', 'lvl5', 'wave10', 'tasty', 'daily'];
+const ACH_IDS = ['first_win', 'flawless', 'boss', 'combo20', 'coop', 'rich', 'half', 'all', 'lvl5', 'wave10', 'tasty', 'daily', 'tut', 'ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'stars3'];
 app.post('/api/ach', limit(30, 60000), auth(async (req, res, id) => {
-  const ids = Array.isArray((req.body || {}).ids) ? req.body.ids.filter(i => ACH_IDS.includes(i)).slice(0, 12) : [];
+  const ids = Array.isArray((req.body || {}).ids) ? req.body.ids.filter(i => ACH_IDS.includes(i)).slice(0, 20) : [];
   const r = await store.mutate(id, u => { const d = u.data; d.ach = [...new Set([...(d.ach || []), ...ids])]; return {}; });
   if (!r) return res.status(401).json({ error: 'Please log in again' });
   res.json({ profile: profile(r.user) });
