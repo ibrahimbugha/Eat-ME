@@ -443,6 +443,8 @@ const TUNING={
   coinStageGrow:.06,comboStep:10,comboMax:3,flawlessBase:10,flawlessPer:2,
   dmgCap:9,invAfterBite:1.6,
   revive:{time:5,range:3.2,hpFrac:.5,shield:3},
+  mix:{dist:2.6,charge:1.5,cd:25},  // super mix: stand this close, for this long, then wait cd seconds
+  heartGift:50,        // coins to give your partner 1 heart in the shop (2 players only)
   shopGrow:.55,healGrow:.06,
   enemies:{
     customer:{hp:3,sp:3.3,r:.6,sc:1,coin:[1,2],from:1,wt:10},
@@ -544,7 +546,7 @@ const AR={
 'Fires a ring of giant pickles in every direction.':'يطلق حلقة من المخلل العملاق في كل الاتجاهات.','Spins into a saw that chops everyone around her.':'تدور كمنشار يقطّع كل من حولها.','Dashes through the crowd. Cannot be bitten while dashing.':'يندفع عبر الحشد. لا يُقضم أثناء الاندفاع.','Leaps and slams. A shockwave hurts and shoves everyone near.':'تقفز وتضرب الأرض. موجة صدمة تؤذي وتدفع من حولها.','Goes berserk: double damage, faster swings, extra speed.':'يهيج: ضرر مضاعف وضربات أسرع وسرعة أعلى.','Runs and leaves a burning salsa trail that scorches enemies.':'يركض ويترك أثر صلصة مشتعلاً يحرق الأعداء.','Freezes everyone nearby solid and chills the rest.':'يجمّد كل من حوله ويبرّد الباقين.','Calls down exploding eggs from the sky on the crowd.':'يُنزل بيضاً متفجراً من السماء على الحشد.','Bursts sprinkles everywhere and heals your partner one bite.':'تنثر الرشّات في كل مكان وتعالج شريكك قضمة.','Spins and sprays seeds in every direction for 3 seconds.':'تدور وتنثر البذور في كل الاتجاهات لمدة ٣ ثوانٍ.','Breathes a cone of fire that burns everything in front.':'ينفث مخروط نار يحرق كل ما أمامه.','Sucks the crowd in, then blasts them with a noodle bomb.':'يشفط الحشد ثم يفجّرهم بقنبلة نودلز.',
 'Balanced shooter':'مطلق متوازن','Triple-shot shotgun':'بندقية بثلاث طلقات','Fast rapid-fire':'إطلاق سريع متتابع','Piercing sprinkles':'رشّات خارقة','Melee brawler':'مقاتل قريب','Boomerang shells':'قشور بومرانج','Slowing shots':'طلقات مبطِّئة','Explosive eggs':'بيض متفجر','Twin sprinkles':'رشّات مزدوجة','Heavy seeds':'بذور ثقيلة','Fire bolts':'كرات نار','Sticky noodles':'نودلز لاصق',
 /* upgrades */
-'Spicy Sauce':'صلصة حارة','+20% damage':'+٢٠٪ ضرر','Quick Hands':'أيدٍ سريعة','+15% attack speed':'+١٥٪ سرعة هجوم','Running Shoes':'حذاء الجري','+8% move speed':'+٨٪ سرعة حركة','Extra Bite':'قضمة إضافية','+1 max bite and heal 1':'+١ قضمة قصوى وعلاج ١','Power Snack':'وجبة القوة','-12% power cooldown':'-١٢٪ انتظار القوة','Lucky Pepper':'فلفل الحظ','+8% chance for double damage':'+٨٪ فرصة ضرر مضاعف','Coin Magnet':'مغناطيس العملات','pull coins from further away':'اجذب العملات من مسافة أبعد','Fresh Napkin':'منديل نظيف','heal all bites':'عالج كل القضمات',
+'Give a Heart':'أعطِ قلبًا','give your partner 1 heart':'أعطِ شريكك قلبًا واحدًا','P%1 gave P%2 a heart!':'اللاعب %1 أعطى اللاعب %2 قلبًا!','SUPER MIX!':'خلطة خارقة!','Frozen Donut Quake':'زلزال الدونات المجمّد','BBQ Party':'حفلة الشواء','Fiesta Spin':'دوّامة الفيستا','Egg Noodle Bomb':'قنبلة نودلز البيض','Sundae Party':'حفلة السانداي','Spicy Sushi Storm':'عاصفة السوشي الحارة','Food Fusion':'اندماج الطعام','Stand together to make a super mix!':'قفوا معًا لصنع خلطة خارقة!','Spicy Sauce':'صلصة حارة','+20% damage':'+٢٠٪ ضرر','Quick Hands':'أيدٍ سريعة','+15% attack speed':'+١٥٪ سرعة هجوم','Running Shoes':'حذاء الجري','+8% move speed':'+٨٪ سرعة حركة','Extra Bite':'قضمة إضافية','+1 max bite and heal 1':'+١ قضمة قصوى وعلاج ١','Power Snack':'وجبة القوة','-12% power cooldown':'-١٢٪ انتظار القوة','Lucky Pepper':'فلفل الحظ','+8% chance for double damage':'+٨٪ فرصة ضرر مضاعف','Coin Magnet':'مغناطيس العملات','pull coins from further away':'اجذب العملات من مسافة أبعد','Fresh Napkin':'منديل نظيف','heal all bites':'عالج كل القضمات',
 'Tough Skin':'جلد قوي','+1 max bite in every run':'+١ قضمة قصوى في كل جولة','Heavy Hitter':'ضربة ثقيلة','+5% damage':'+٥٪ ضرر','Gold Tooth':'سنّ ذهبي','+5% coins from enemies':'+٥٪ عملات من الأعداء','Packed Lunch':'وجبة جاهزة','start every run with +20 coins':'ابدأ كل جولة بـ+٢٠ عملة','Quick Recipe':'وصفة سريعة','-3% power cooldown':'-٣٪ انتظار القوة',
 'The Big Kitchen':'المطبخ الكبير','The Dining Hall':'قاعة الطعام','The Food Festival':'مهرجان الطعام','The Neon Rooftop':'السطح المضيء','Big Hungry Bob':'بوب الجائع الكبير','Mama Munch':'ماما مانش','King Gourmand':'الملك الشره','The Grand Chef':'الشيف الأعظم',
 /* achievements */
@@ -596,7 +598,7 @@ const AR={
 const tr=(s,...a)=>{let r=(LANG==='ar'&&AR[s])||s;for(let i=0;i<a.length;i++)r=r.split('%'+(i+1)).join(a[i]);return r;};
 const FOOD_EMO=['🍔','🍕','🍣','🍩','🌭','🌮','🍦','🥚','🧁','🍉','🌶️','🍜'];
 const FOOD_DMG=[3,3,2,4,5,3,2,4,2,4,4,3];
-const UP_EMO={dmg:'🌶️',rate:'✋',spd:'👟',hp:'🍖',cd:'⚡',crit:'🍀',mag:'🧲',heal:'🧻'};
+const UP_EMO={dmg:'🌶️',rate:'✋',spd:'👟',hp:'🍖',cd:'⚡',crit:'🍀',mag:'🧲',heal:'🧻',heart:'💝'};
 const TIPS=['Pickles are just cucumbers in a tiny hoodie.','Never trust a fork. Ever.','Rolling is like butter on a hot pan: you just slide away.','Coins are shiny, but please do not eat them.','If your friend gets eaten, go hug them. Hugs revive.','Ketchup is basically a red hug.','Hungry people are always hungry. It is their whole personality.','The Grand Chef gets very sad when you call his soup water.','Fun fact: donuts have no corners. Nobody can corner a donut.','Tip: a Gourmet food has a tiny golden crown. Fancy!','Thieves love coins. Catch them to get your coins back!','Dodge the magic orbs: red ones flip your controls!','Gold elites are tough, but they drop three times the coins.'];
 const ACH=[
   {id:'first_win',e:'🏆',n:'First win',d:'Beat all 5 chapters'},
@@ -1573,7 +1575,7 @@ function recalc(p){
   p.pcd=p.f.cd*(1-.1*(p.tier-1))*Math.pow(.88,p.up.cd)*(1-.03*PL('cd'));
   p.crit=.05+.08*p.up.crit+.02*PL('crit');
 }
-function magnetR(p){return 5+2.5*p.up.mag+PL('mag');}
+function magnetR(p){return players.length>1?5:5+2.5*p.up.mag+PL('mag');}
 function dmgMul(p){return Math.min(TUNING.dmgCap,(1+.35*(p.tier-1))*(1+.2*p.up.dmg)*(p.rageT>0?2:1)*(1+.05*PL('dmg'))*(1+.04*(foodLevel(p.fi)-1)));}
 function critMul(){return 2+.15*PL('critd');}
 function comboMul(){return Math.min(TUNING.comboMax,1+Math.floor(combo/TUNING.comboStep));}
@@ -1684,10 +1686,10 @@ function eggRain(p){
     addRing(x,z,2.8,dur,0xfff1c9);
   }
 }
-function dropFire(p){
-  if(zones.length>26)return;
+function dropFire(p,x,z){
+  if(zones.length>26)return;if(x===undefined){x=p.x;z=p.z;}
   const m=new THREE.Mesh(new THREE.CircleGeometry(1.5,16),new THREE.MeshBasicMaterial({color:0xff7a3d,transparent:true,opacity:.7,depthWrite:false}));
-  m.rotation.x=-Math.PI/2;m.position.set(p.x,.06,p.z);scene.add(m);zones.push({m,x:p.x,z:p.z,t:3,tick:0,owner:p});
+  m.rotation.x=-Math.PI/2;m.position.set(x,.06,z);scene.add(m);zones.push({m,x,z,t:3,tick:0,owner:p});
 }
 function updateZonesEggs(dt){
   for(const z of zones){
@@ -1707,6 +1709,43 @@ function updateZonesEggs(dt){
     if(k>=1){explode(e.x,e.z,3,e.dmg,e.owner,0xffd9a0,false);scene.remove(e.m);e.dead=true;}
   }
   skyEggs=skyEggs.filter(e=>!e.dead);
+}
+/* ---------- super mixes: two players stand together ---------- */
+let mixSt={charge:0,cd:0,tick:0,hint:false};
+function freezeAround(x,z,R,dmg,owner){
+  sfx.freeze();addRing(x,z,R,.6,0xaee9ff);burst(x,1,z,0xcff3ff,30,9,.2,.8);
+  for(const e of enemies){if(e.dead)continue;const dx=e.x-x,dz=e.z-z,d=Math.hypot(dx,dz);
+    if(d<R+e.r){damageEnemy(e,dmg,owner,dx/(d||1)*5,dz/(d||1)*5,false,e.x,e.z);if(!e.dead){e.slow=4;if(!e.boss)e.stun=Math.max(e.stun||0,3);}}}
+}
+function shotRing(p,n,o,off){for(let i=0;i<n;i++)shot(p,i/n*TAU+(off||0),o);}
+const MIXES={
+  'donut+icecream':{name:'Frozen Donut Quake',col:0xff9fd6,go(a,b,x,z){freezeAround(x,z,15,4*dmgMul(a),a);explode(x,z,6,8*dmgMul(b),b,0xff7eb6,false);shotRing(a,24,{sp:18,dmg:2,life:1.2,pierce:99,col:0xff7eb6,sx:.35,sy:.25,sz:.5,r:.7});}},
+  'burger+hotdog':{name:'BBQ Party',col:0xffb347,go(a,b,x,z){for(const p of[a,b])p.rageT=Math.max(p.rageT,6);shotRing(a,28,{sp:16,dmg:3.5,life:1.4,pierce:99,col:0x6dbb3e,sx:.35,sy:.35,sz:.8,r:.8});explode(x,z,5,6*dmgMul(b),b,0xffd23f,false);}},
+  'pizza+taco':{name:'Fiesta Spin',col:0xff7a3d,go(a,b,x,z){for(let i=0;i<12;i++){const t=i/12*TAU;dropFire(a,clamp(x+Math.sin(t)*5,-HX,HX),clamp(z+Math.cos(t)*5,-HZ,HZ));}for(let k=0;k<3;k++)shotRing(b,16,{sp:19,dmg:2.2,life:1.3,pierce:99,col:0xf2b84b,sx:.5,sy:.08,sz:.5,r:.75},k*.2);}},
+  'egg+ramen':{name:'Egg Noodle Bomb',col:0xf5d36a,go(a,b,x,z){const r=a.f.key==='ramen'?a:b,e=r===a?b:a;r.slurpT=Math.max(r.slurpT,1.4);addRing(x,z,13,1.4,0xf5d36a);eggRain(e);eggRain(e);}},
+  'cupcake+icecream':{name:'Sundae Party',col:0xffc4e1,go(a,b,x,z){for(const p of[a,b]){p.hp=p.maxHp;p.shieldT=Math.max(p.shieldT,3);for(let k=0;k<6;k++)floatHeart(p.x+rnd(-1,1),1.4,p.z+rnd(-1,1));}freezeAround(x,z,12,3*dmgMul(a),a);shotRing(b,24,{sp:17,dmg:1.8,life:1,pierce:99,col:0xff8fcf,sx:.3,sy:.3,sz:.3,r:.6});}},
+  'chili+sushi':{name:'Spicy Sushi Storm',col:0xff5a2e,go(a,b,x,z){for(let k=0;k<4;k++)shotRing(k%2?a:b,18,{sp:24,dmg:2.4,life:1.1,pierce:4,col:k%2?0xffffff:0xff5a2e,sx:.22,sy:.22,sz:.55},k*.17);for(let i=0;i<8;i++){const t=i/8*TAU;dropFire(a,clamp(x+Math.sin(t)*3,-HX,HX),clamp(z+Math.cos(t)*3,-HZ,HZ));}}}
+};
+const MIX_ANY={name:'Food Fusion',col:0xffd23f,go(a,b,x,z){explode(x,z,7,7*(dmgMul(a)+dmgMul(b))/2,a,0xffd23f,false);shotRing(a,12,{sp:18,dmg:2.5,life:1.2,pierce:99,col:PCOL[0],sx:.32,sy:.32,sz:.32,r:.7});shotRing(b,12,{sp:18,dmg:2.5,life:1.2,pierce:99,col:PCOL[1],sx:.32,sy:.32,sz:.32,r:.7},TAU/24);}};
+function mixFor(a,b){return MIXES[[a.f.key,b.f.key].sort().join('+')]||MIX_ANY;}
+function updateMix(dt){
+  mixSt.cd=Math.max(0,mixSt.cd-dt);
+  if(players.length<2||wstate!=='fight'){mixSt.charge=0;return;}
+  const[a,b]=players,M=TUNING.mix;
+  const close=!a.downed&&!b.downed&&Math.hypot(a.x-b.x,a.z-b.z)<M.dist;
+  if(!close||mixSt.cd>0){mixSt.charge=Math.max(0,mixSt.charge-dt*2);return;}
+  if(!mixSt.hint){mixSt.hint=true;toast(tr('Stand together to make a super mix!'),'#ffc4e1');}
+  const mx=(a.x+b.x)/2,mz=(a.z+b.z)/2,X=mixFor(a,b);
+  mixSt.charge+=dt;mixSt.tick-=dt;
+  if(mixSt.tick<=0){mixSt.tick=.25;addRing(mx,mz,1.2+mixSt.charge*2.2,.3,X.col);sfx.tick();}
+  if(mixSt.charge>=M.charge){
+    mixSt.charge=0;mixSt.cd=M.cd;
+    sfx.evolve();sfx.power();flashScreen('#'+X.col.toString(16).padStart(6,'0'));hitstop(.09);shake=Math.max(shake,.8);punch=Math.max(punch,.05);
+    for(const p of[a,b]){p.inv=Math.max(p.inv,1);rumble(p,300,1,1);}
+    pop(mx,1.4,mz,X.col,8,.45);burst(mx,1.2,mz,X.col,40,10,.25,.9);
+    X.go(a,b,mx,mz);
+    banner('🍩 '+tr('SUPER MIX!')+' 🍦',tr(X.name));
+  }
 }
 function hurt(p){
   if(p.inv>0||p.downed||p.dashT>0||p.rollT>0||p.shieldT>0)return false;
@@ -2239,6 +2278,7 @@ function composeWave(n){
   return q;
 }
 function clearWorld(){
+  mixSt.charge=0;mixSt.cd=0;
   for(const e of enemies){scene.remove(e.g);if(e.tele)clearTele(e);}
   for(const d of dying)scene.remove(d.g);
   for(const b of pB)scene.remove(b.m);for(const b of eB)scene.remove(b.g);
@@ -2293,7 +2333,10 @@ function waveStep(dt){
 
 /* ---------- shop ---------- */
 const GIFT=UPG.length,READY=UPG.length+1;
+const HEART_ITEM={k:'heart',name:'Give a Heart',desc:'give your partner 1 heart',repeat:true};
+function shopItem(i){return players.length>1&&UPG[i].k==='mag'?HEART_ITEM:UPG[i];}
 function upCost(p,i){
+  if(shopItem(i)===HEART_ITEM)return TUNING.heartGift;
   const u=UPG[i],c=u.repeat?u.base*(1+TUNING.healGrow*wave):u.base*(1+TUNING.shopGrow*p.up[u.k]);
   return Math.max(1,Math.round(c*(1-.05*PL('coupon'))));
 }
@@ -2312,6 +2355,12 @@ function upStat(p,u){
   return null;
 }
 function buyUpg(p,i,tg){
+  if(shopItem(i)===HEART_ITEM){
+    const m=players.find(q=>q!==p),c=upCost(p,i);
+    if(!m||m.hp>=m.maxHp||p.coins<c){sfx.block();return;}
+    p.coins-=c;m.hp++;sfx.buy();burst(m.x,1.5,m.z,0xff6fa5,12,5,.16,.5);for(let k=0;k<5;k++)floatHeart(m.x+rnd(-1,1),1.5,m.z+rnd(-1,1));
+    toast(tr('P%1 gave P%2 a heart!',p.i+1,m.i+1),'#ffb3d1');shopKey[m.i]=null;return;
+  }
   tg=tg||p;const u=UPG[i];
   if(!u.repeat&&tg.up[u.k]>=u.max){sfx.block();return;}
   const c=upCost(tg,i);
@@ -2343,17 +2392,18 @@ function shopUnready(p){p.shop.ready=false;shopKey[p.i]=null;}
 function renderShop(){
   for(const p of players){
     const el=$('sp'+p.i),mate=players.find(q=>q!==p),gift=!!(mate&&p.shop.gift),tg=gift?mate:p;
-    const key=[p.coins,p.shop.cur,p.shop.ready,gift,tg.hp,tg.maxHp,Object.values(tg.up).join(','),LANG].join('|');
+    const key=[p.coins,p.shop.cur,p.shop.ready,gift,tg.hp,tg.maxHp,mate?mate.hp:0,Object.values(tg.up).join(','),LANG].join('|');
     if(key===shopKey[p.i])continue;shopKey[p.i]=key;
     el.hidden=false;el.textContent='';el.classList.toggle('isready',p.shop.ready);
     const h=elx('div','sph');h.appendChild(elx('span','','P'+(p.i+1)+' '+FOOD_EMO[p.fi]+' '+tr(p.f.name)));h.appendChild(elx('span','cn','🪙 '+fmt(p.coins)));el.appendChild(h);
     if(gift)el.appendChild(elx('div','giftbar','🎁 '+tr('Buying for P%1 with your coins',mate.i+1)+' '+FOOD_EMO[mate.fi]));
     const g=elx('div','shelfgrid');
-    UPG.forEach((u,i)=>{
-      const lvl=u.repeat?0:tg.up[u.k],maxed=!u.repeat&&lvl>=u.max,cost=upCost(tg,i),full=u.repeat&&tg.hp>=tg.maxHp;
+    UPG.forEach((u0,i)=>{
+      const u=shopItem(i),ht=u===HEART_ITEM,who=ht?mate:tg;
+      const lvl=u.repeat?0:tg.up[u.k],maxed=!u.repeat&&lvl>=u.max,cost=upCost(tg,i),full=u.repeat&&who.hp>=who.maxHp;
       const it=elx('div','item'+(gift?' gift':'')+(p.shop.cur===i&&!p.shop.ready?' cur':'')+(maxed||full?' max':(p.coins<cost?' poor':'')));
       it.appendChild(elx('div','ico',UP_EMO[u.k]));it.appendChild(elx('b','',tr(u.name)));it.appendChild(elx('small','',tr(u.desc)));
-      const st=upStat(tg,u);if(st&&!maxed&&!full)it.appendChild(elx('span','ba',st[0]+' ➜ '+st[1]));
+      const st=ht?[mate.hp+'❤',(mate.hp+1)+'❤']:upStat(tg,u);if(st&&!maxed&&!full)it.appendChild(elx('span','ba',(ht?'P'+(mate.i+1)+' ':'')+st[0]+' ➜ '+st[1]));
       if(!u.repeat){const d=elx('div','dots');for(let k=0;k<u.max;k++)d.appendChild(elx('i',k<lvl?'on':''));it.appendChild(d);}
       it.appendChild(elx('div','tag2',maxed?tr('MAX'):(full?'❤ '+tr('Full'):'🪙 '+fmt(cost))));
       it.onclick=()=>shopPick(p,i);g.appendChild(it);
@@ -3303,7 +3353,7 @@ function playStep(dt){
   if(reqPause){setPause(true);return;}
   updateTwist(dt);if(tut)tutorialStep();
   comboT-=dt;if(comboT<=0)combo=0;
-  updateEnemies(dt);updateBullets(dt);updatePickups(dt);updateCoins(dt,wstate==='inter');updateZonesEggs(dt);waveStep(dt);updateHud();
+  updateMix(dt);updateEnemies(dt);updateBullets(dt);updatePickups(dt);updateCoins(dt,wstate==='inter');updateZonesEggs(dt);waveStep(dt);updateHud();
   if(mode==='play'&&players.length&&!players.some(p=>!p.downed||p.autoRev>0))endGame();
 }
 function pauseStep(){
@@ -3374,7 +3424,7 @@ function frame(now){
 }
 fit();applyGfx();buildStage(0);bindUi();renderSlots();bootLogin();
 requestAnimationFrame(frame);
-if(location.hostname==='localhost'||/[?&]debug/.test(location.search))window.__dem={get mode(){return mode;},get wave(){return wave;},get combo(){return combo;},slots,save,get type(){return gameType;},get acct(){return acct;},get boss(){return !!boss;},players:()=>players,enemies:()=>enemies,
+if(location.hostname==='localhost'||/[?&]debug/.test(location.search))window.__dem={get mode(){return mode;},get wave(){return wave;},get combo(){return combo;},slots,save,get type(){return gameType;},get acct(){return acct;},get boss(){return !!boss;},players:()=>players,enemies:()=>enemies,step:dt=>playStep(dt),get mix(){return mixSt;},mixName:()=>players.length>1?mixFor(players[0],players[1]).name:null,shopBuy:(pi,i)=>buyUpg(players[pi],i),shopItem:i=>shopItem(i).name,magnet:pi=>magnetR(players[pi]),
   killAll(){for(const e of enemies.slice())damageEnemy(e,9999,players[0]||null,0,0,false);spawnQ=[];},
   setWave(n){wave=n-1;startWave(n);},hurt(i){return hurt(players[i]);},spawn(k,x,z,el){return spawnEnemy(k,x,z,el);},curse(i,t){return applyCurse(players[i],t);},openShop(){openShop();},chapter(c){curCh=c;},get ch(){return curCh;},get cam(){return camera;},get scene(){return scene;},ringBell(){twist.bellCd=0;ringBell();},get zoom(){return camZoom;},win(){wave=CHAPTERS[curCh].waves;spawnQ=[];for(const e of enemies.slice())damageEnemy(e,9999,null,0,0,false);}};
 })();

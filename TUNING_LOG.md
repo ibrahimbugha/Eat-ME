@@ -27,3 +27,9 @@ Price = base x (1 + 0.6 x level). Same list in `server.js` (`PERMS`) and `public
 - Story boss HP: base x (2.2 + 0.15 per chapter). Mini bosses x0.5.
 - Stars: 3 = no one eaten and 5 bites or less, 2 = eaten at most once and 15 bites or less, 1 = cleared.
 - Beating chapters 1-5 unlocks Frank, Tito, Coco, Eggbert and Cleo for free, plus 200 coins.
+
+## 2026-11-28 - Super mixes, heart gift, magnet solo-only
+- `mix.dist` 2.6 / `mix.charge` 1.5s / `mix.cd` 25s: stand that close to your partner for 1.5 s and you fire a SUPER MIX, then it waits 25 s. Reason: Ibrahim wants co-op to feel unique.
+- Named mixes: Donut+Ice Cream (Frozen Donut Quake), Burger+Hot Dog (BBQ Party), Pizza+Taco (Fiesta Spin), Egg+Ramen (Egg Noodle Bomb), Cupcake+Ice Cream (Sundae Party), Chili+Sushi (Spicy Sushi Storm). Any other pair = Food Fusion.
+- `heartGift` 50: in 2-player, the Coin Magnet shop slot becomes "Give a Heart" (50 coins = +1 heart for your partner).
+- Coin magnet upgrades (shop + Magnet Pocket) now only work in single player. Reason: in co-op one player's magnet stole all the coins (same problem Nom Nom Apocalypse reviewers hated).
